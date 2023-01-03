@@ -17,13 +17,13 @@
         android:theme="@style/Theme.SignLanguage"
         tools:targetApi="31">
         <activity
-            android:name=".CameraActivity"
+            android:name=".MainActivity"
             android:exported="false" />
         <activity
             android:name=".HomeActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".CameraActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
