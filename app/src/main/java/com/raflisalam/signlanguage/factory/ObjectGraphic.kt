@@ -27,13 +27,17 @@ class ObjectGraphic (
             textPaints[i].color = COLORS[i][0]
             textPaints[i].textSize = TEXT_SIZE
 
+
             //define Bbox Paints
             boxPaints[i].color = COLORS[i][1]
             boxPaints[i].textSize = TEXT_SIZE
+            boxPaints[i].style= Paint.Style.STROKE
+            boxPaints[i].strokeWidth = STROKE_WIDTH
 
             // Label Paints
             labelPaints[i].color = COLORS[i][1]
-            boxPaints[i].textSize = TEXT_SIZE
+            labelPaints[i].textSize = TEXT_SIZE
+            labelPaints[i].style = Paint.Style.FILL
         }
     }
 

@@ -13,8 +13,8 @@ open abstract class ModelTensorflowYOLO(
     var detectThreshold : Float,
     var IOU_threshold : Float,
     var IOU_class_duplicated_threshold : Float,
-    var label_file : File,
-    var model_file : File,
+    var label_file : String,
+    var model_file : String,
     var IS_INT_8 : Boolean = false,
     )
 {

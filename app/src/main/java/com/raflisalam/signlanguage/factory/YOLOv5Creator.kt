@@ -32,8 +32,8 @@ class YOLOv5Creator(
     detected_threshold : Float,
     IOU_THRESHOLD : Float,
     IOU_class_duplicated : Float,
-    label_file : File,
-    model_file : File,
+    label_file : String,
+    model_file : String,
     is_int_8 : Boolean
 ) : ModelTensorflowYOLO(
     input_size,
@@ -70,9 +70,9 @@ class YOLOv5Creator(
     }
 
     override fun initialModel(context: Context) {
-        tflite = Interpreter(model_file, options)
-        val fileInputStream : InputStream = FileInputStream(label_file)
-        associatedLabel = FileUtil.loadLabels(fileInputStream)
+        val tfliteByteBuffer = FileUtil.loadMappedFile(context, model_file)
+        tflite = Interpreter(tfliteByteBuffer, options)
+        associatedLabel = FileUtil.loadLabels(context,label_file)
     }
 
     override fun addThread(thread: Int) {
@@ -92,7 +92,7 @@ class YOLOv5Creator(
                 .build()
             yoloTfliteInput = TensorImage(DataType.FLOAT32)
 
-            probabilityBuffer = TensorBuffer.createFixedSize(outputSize, DataType.UINT8)
+            probabilityBuffer = TensorBuffer.createFixedSize(outputSize, DataType.FLOAT32)
         }
         else
         {
@@ -108,8 +108,9 @@ class YOLOv5Creator(
                 .build()
             yoloTfliteInput = TensorImage(DataType.UINT8)
 
-            probabilityBuffer = TensorBuffer.createFixedSize(outputSize, DataType.FLOAT32)
+            probabilityBuffer = TensorBuffer.createFixedSize(outputSize, DataType.UINT8)
         }
+
         yoloTfliteInput.load(bitmap)
         yoloTfliteInput = imageProcessor.process(yoloTfliteInput)
 
@@ -121,6 +122,7 @@ class YOLOv5Creator(
         }
 
         val allRecognitions = doRecognition(probabilityBuffer)
+
         val nmsRecognitions = nmsAllClass(nonMaxSuppression(allRecognitions))
 
         for(recognition in nmsRecognitions)
@@ -156,10 +158,10 @@ class YOLOv5Creator(
             val h = recognitionArray[3 + gridStride] * inputSize.height
 
             // Convert YOLO  Format BBOX To Normal Normal BBOX
-            val xMin : Float = Math.min(0.0, x - w / 2.0).toFloat()
-            val yMin : Float = Math.min(0.0, y - h/ 2.0).toFloat()
-            val yMax : Float = Math.min(inputSize.width.toDouble(), y + h / 2.0).toFloat()
-            val xMax : Float = Math.min(inputSize.height.toDouble(), x + w / 2.0 ).toFloat()
+            val xMin : Float = Math.max(0.0, x - w / 2.0).toFloat()
+            val yMin : Float = Math.max(0.0, y - h/ 2.0).toFloat()
+            val yMax : Float = Math.min(inputSize.height.toDouble(), y + h / 2.0).toFloat()
+            val xMax : Float = Math.min(inputSize.width.toDouble(), x + w / 2.0 ).toFloat()
 
             val confidence = recognitionArray[4 + gridStride]
 
@@ -223,7 +225,6 @@ class YOLOv5Creator(
                     }
                 }
             }
-            return nmsRecognitions
         }
 
         return nmsRecognitions
@@ -282,8 +283,8 @@ class YOLOv5Creator(
     {
         val intersection = boxIntersection(a,b)
 
-        val areaA = (a.bottom * a.top) *(a.left * a.right)
-        val areaB = (b.top * b.bottom) * (b.left * b.right)
+        val areaA = (a.bottom - a.top) *(a.right - a.left)
+        val areaB = (b.bottom - b.top) * (b.right - b.left)
         return areaA + areaB - intersection
 
     }
